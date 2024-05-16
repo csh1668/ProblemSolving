@@ -1,4 +1,23 @@
 import math
+import sys
+
+
+def combine(a, b):
+    is_a_int, is_b_int = isinstance(a, int), isinstance(b, int)
+    cnt_odd = cnt_even = 0
+    if is_a_int and is_b_int:
+        cnt_odd += (1 if a & 1 else 0) + (1 if b & 1 else 0)
+        cnt_even += (0 if a & 1 else 1) + (0 if b & 1 else 1)
+    elif is_a_int:
+        cnt_odd += (1 if a & 1 else 0) + b[0]
+        cnt_even += (0 if a & 1 else 1) + b[1]
+    elif is_b_int:
+        cnt_odd += a[0] + (1 if b & 1 else 0)
+        cnt_even += a[1] + + (0 if b & 1 else 1)
+    else:
+        cnt_odd += a[0] + b[0]
+        cnt_even += a[1] + b[1]
+    return cnt_odd, cnt_even
 
 
 class ArraySegmentTree:
@@ -7,7 +26,7 @@ class ArraySegmentTree:
         self.init_arr = init_arr
         self.init_val = init_val
         self.combine_func = combine_func
-        self.tree = [init_val] * pow(2, math.ceil(math.log(n, 2) + 1))
+        self.tree = [init_val for _ in range(pow(2, math.ceil(math.log(n, 2) + 1)))]
         self.location = [0] * n
         self.make_segment_tree(0, n - 1, 1)
 
@@ -40,3 +59,18 @@ class ArraySegmentTree:
         while idx > 1:
             idx //= 2
             self.tree[idx] = self.combine_func(self.tree[idx * 2], self.tree[idx * 2 + 1])
+
+
+n = int(input())
+arr = list(map(int, input().split()))
+seg = ArraySegmentTree(arr, (0, 0), combine)
+
+m = int(input())
+for _ in range(m):
+    a, b, c = map(int, sys.stdin.readline().split())
+    if a == 1:
+        seg.update_from_leaf(b - 1, c)
+    elif a == 2:
+        print(seg.search(0, n - 1, b - 1, c - 1)[1])
+    else:
+        print(seg.search(0, n - 1, b - 1, c - 1)[0])

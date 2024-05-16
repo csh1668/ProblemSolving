@@ -1,4 +1,5 @@
 import math
+import sys
 
 
 class ArraySegmentTree:
@@ -40,3 +41,15 @@ class ArraySegmentTree:
         while idx > 1:
             idx //= 2
             self.tree[idx] = self.combine_func(self.tree[idx * 2], self.tree[idx * 2 + 1])
+
+
+n, q = map(int, input().split())
+arr = list(map(int, input().split()))
+seg = ArraySegmentTree(arr, 0, lambda x, y: x + y)
+# print(seg.tree)
+for _ in range(q):
+    x, y, a, b = map(int, sys.stdin.readline().split())
+    if x > y:
+        x, y = y, x
+    print(seg.search(0, n - 1, x - 1, y - 1))
+    seg.update_from_leaf(a - 1, b)
