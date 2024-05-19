@@ -121,7 +121,7 @@ void div_range(int start, int end, int left, int right, int val, int i = 1) {
 int main()
 {
 	cin.tie(0); cout.tie(0); ios_base::sync_with_stdio(false);
-	freopen("input2.txt", "rw", stdin);
+	// freopen("input2.txt", "rw", stdin);
 	// freopen("output.txt", "w", stdout);
 
 	fill_n(lazy2, 262144, -MAX);
