@@ -108,3 +108,10 @@ for _ in range(q):
 
 # 문제점:
 # '연속함'을 구현하지 않았음
+# class Node:
+#     def __init__(self, cnt, prefix, suffix, start, end):
+#         self.cnt = cnt
+#         self.prefix = prefix
+#         self.suffix = suffix
+#         self.start = start
+#         self.end = end
