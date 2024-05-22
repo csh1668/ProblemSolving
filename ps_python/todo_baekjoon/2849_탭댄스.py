@@ -3,14 +3,14 @@ import math
 import sys
 
 class ArraySegmentTree:
-    def __init__(self, init_arr, cmp_func, init_val):
+    def __init__(self, init_arr, combine_func, init_val):
         n = len(init_arr)
         self.n = n
         self.init_arr = init_arr
         self.init_val = init_val
         self.tree = [init_val for _ in range(pow(2, math.ceil(math.log(n, 2) + 1)))]
         self.location = [0] * n
-        self.cmp_func = cmp_func
+        self.combine_func = combine_func
         self.make_segment_tree(0, n - 1, 1)
 
     def make_segment_tree(self, left, right, i=1):
@@ -22,8 +22,8 @@ class ArraySegmentTree:
             return self.tree[i]
         mid = (left + right) // 2
         # segment에 대한 연산
-        self.tree[i] = self.cmp_func(self.make_segment_tree(left, mid, i * 2),
-                                     self.make_segment_tree(mid + 1, right, i * 2 + 1))
+        self.tree[i] = self.combine_func(self.make_segment_tree(left, mid, i * 2),
+                                         self.make_segment_tree(mid + 1, right, i * 2 + 1))
         return self.tree[i]
 
     def search(self, start, end, left, right, i=1):
@@ -35,15 +35,15 @@ class ArraySegmentTree:
         if left <= start and end <= right:
             return self.tree[i]
         mid = (start + end) // 2
-        return self.cmp_func(self.search(start, mid, left, right, i * 2),
-                             self.search(mid + 1, end, left, right, i * 2 + 1))
+        return self.combine_func(self.search(start, mid, left, right, i * 2),
+                                 self.search(mid + 1, end, left, right, i * 2 + 1))
 
     def update_from_leaf(self, i, val):
         idx = self.location[i]
         self.tree[idx] = val
         while idx > 1:
             idx //= 2
-            self.tree[idx] = self.cmp_func(self.tree[idx * 2], self.tree[idx * 2 + 1])
+            self.tree[idx] = self.combine_func(self.tree[idx * 2], self.tree[idx * 2 + 1])
 
 
 class Node:
