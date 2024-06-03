@@ -18,7 +18,7 @@ while idx < n:
 # arr[1:4] => 1번부터 3번까지란 뜻
 
 for q in queries:
-    if q[0] == 1:
+    if q[0] == 2:
         i, j, k = q[1] - 1, q[2] - 1, q[3]
         ans = 0
         lower = math.ceil(i / sqrt_n)
