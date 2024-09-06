@@ -1,3 +1,7 @@
+#pragma GCC optimize ("O3")
+#pragma GCC target("sse,sse2,sse3,ssse3,sse4,avx,avx2")
+#pragma GCC optimize ("unroll-loops") 
+
 #include <bits/stdc++.h>
 
 using namespace std;
@@ -21,10 +25,9 @@ struct splayTree
     } *tree;
 
     void update(node* x){
-        x->cnt = 1;
+        x->cnt = 1 + (x->l ? x->l->cnt : 0) + (x->r ? x->r->cnt : 0);
         x->esum = x->osum = 0;
         if (x->l && x->r && !x->l->dummy && !x->r->dummy){
-            x->cnt += x->l->cnt + x->r->cnt;
             x->esum += x->l->esum, x->osum += x->l->osum;
             if (x->l->cnt & 1){
                 x->esum += x->r->esum;
@@ -35,7 +38,6 @@ struct splayTree
             }
 
         } else if (x->l && !x->l->dummy){
-            x->cnt += x->l->cnt;
             x->esum += x->l->esum, x->osum += x->l->osum;
             if (x->l->cnt & 1){
                 x->osum += x->v;
@@ -43,7 +45,6 @@ struct splayTree
                 x->esum += x->v;
             }
         } else if (x->r && !x->r->dummy){
-            x->cnt += x->r->cnt;
             x->esum += x->v;
             x->esum += x->r->osum, x->osum += x->r->esum;
         } else {
