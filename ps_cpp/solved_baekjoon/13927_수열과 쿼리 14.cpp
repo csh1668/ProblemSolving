@@ -7,7 +7,7 @@
 
 using namespace std;
 typedef long long int ll;
-constexpr int MAX = 100'010, SQ = 317;
+constexpr int MAX = 100'010, INTERVAL_SIZE = 1000;
 
 struct MyBitset { // 비트셋은 비트셋인데 내부 배열에 접근할 수 있는
     const static int SZ = 1563; // 100000 / 64 + 1
@@ -15,10 +15,10 @@ struct MyBitset { // 비트셋은 비트셋인데 내부 배열에 접근할 수
     alignas(32) ll m[SZ];
     MyBitset() { memset(m, 0, sizeof(m)); }
     MyBitset(const MyBitset& o) { memcpy(m, o.m, sizeof(m)); }
-    void set(int i) { m[i >> 6] |= 1LL << (i & 63); }
-    void reset() { memset(m, 0, sizeof(m)); }
+    inline void set(int i) { m[i >> 6] |= 1LL << (i & 63); }
+    inline void reset() { memset(m, 0, sizeof(m)); }
 
-    void operator|=(const MyBitset& o) {
+    inline void operator|=(const MyBitset& o) {
         // for (int i = 0; i < SZ; ++i) m[i] |= o.m[i];
         int i = 0;
         for (; i < SZ; i += 4) {
@@ -27,7 +27,7 @@ struct MyBitset { // 비트셋은 비트셋인데 내부 배열에 접근할 수
         for (; i < SZ; ++i) m[i] |= o.m[i];
     }
 
-    int find_kth_set_bit(int k) { // 오른쪽에서부터 k번째 켜진 비트의 위치
+    inline int find_kth_set_bit(int k) { // 오른쪽에서부터 k번째 켜진 비트의 위치
         for (int i = 0; i < SZ; ++i) {
             if (__builtin_popcountll(m[i]) >= k) {
                 for (int j = 0; j < 64; ++j) {
@@ -47,14 +47,16 @@ struct SQDC {
     // bitset<MAX> st[SQ], res;
     // st: 버킷, res: 쿼리 결과 구할 때 쓸 임시 변수
     // tree: 버킷에 대한 세그먼트 트리
-    MyBitset st[SQ], res, tree[SQ << 2];
+    MyBitset st[MAX / INTERVAL_SIZE], res, tree[1 << (33 - __builtin_clz(MAX / INTERVAL_SIZE + 1))], empty;
+    int N;
 
     void init(int N) {
+        this->N = N;
         for (int i = 0, j; i < N; i = j) {
-            j = min(i + SQ, N);
-            init_bucket(st[i / SQ], i, j);
+            j = min(i + INTERVAL_SIZE, N);
+            init_bucket(st[i / INTERVAL_SIZE], i, j);
         }
-        init_tree(0, SQ - 1);
+        init_tree(0, N / INTERVAL_SIZE);
     }
 
     void init_tree(int l, int r, int i = 1) {
@@ -68,7 +70,7 @@ struct SQDC {
     }
 
     MyBitset query_tree(int l, int r, int ql, int qr, int i = 1) {
-        if (r < ql || qr < l) return MyBitset();
+        if (r < ql || qr < l) return empty;
         if (ql <= l && r <= qr) return tree[i];
         int m = (l + r) >> 1;
         MyBitset res = query_tree(l, m, ql, qr, i << 1);
@@ -77,7 +79,7 @@ struct SQDC {
     }
 
     // [l, r)
-    void init_bucket(MyBitset& bkt, int l, int r) {
+    inline void init_bucket(MyBitset& bkt, int l, int r) {
         bkt.reset();
         for (int i = l; i < r; ++i) {
             bkt.set(naive[i]);
@@ -88,13 +90,13 @@ struct SQDC {
     int query(int l, int r, int k) {
         res.reset();
         for (int i = l; i <= r;) {
-            if (i % SQ == 0 && i + SQ - 1 <= r) {
+            if (i % INTERVAL_SIZE == 0 && i + INTERVAL_SIZE - 1 <= r) {
                 // res |= st[i / SQ];
                 // i += SQ;
                 int j = 0;
-                while ((i + j + SQ) + SQ - 1 <= r) j += SQ;
-                res |= query_tree(0, SQ - 1, i / SQ, (i + j) / SQ);
-                i += j + SQ;
+                while ((i + j + INTERVAL_SIZE) + INTERVAL_SIZE - 1 <= r) j += INTERVAL_SIZE;
+                res |= query_tree(0, N / INTERVAL_SIZE, i / INTERVAL_SIZE, (i + j) / INTERVAL_SIZE);
+                i += j + INTERVAL_SIZE;
             } else {
                 res.set(naive[i]);
                 ++i;
