@@ -36,7 +36,7 @@ class AhoCorasick:
                     if ch in dest.children:
                         dest = dest.children[ch]
                     nxt.fail = dest
-                if nxt.fail.is_end: nxt.output = True
+                if nxt.fail.is_end: nxt.is_end = True
                 q.append(nxt)
 
     def count_distinct(self, s):
@@ -54,7 +54,6 @@ class AhoCorasick:
 while True:
     n, m = map(int, sys.stdin.readline().split())
     if n == 0 and m == 0: break
-    patterns = [sys.stdin.readline().strip() for _ in range(n)]
-    ac = AhoCorasick(patterns)
+    ac = AhoCorasick([sys.stdin.readline().strip() for _ in range(n)])
     ans = sum(ac.count_distinct(sys.stdin.readline().strip()) for _ in range(m))
     print(ans)

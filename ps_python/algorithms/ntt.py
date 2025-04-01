@@ -1,54 +1,43 @@
-mod = 998244353
-w = 3
-
+MOD = 998244353
+W = 3 # 원시근
 
 def ntt(a, inverse=False):
-    n = len(a)
-    j = 0
+    n = len(a); j = 0
     for i in range(1, n):
-        reverse = n // 2
+        reverse = n >> 1
         while j >= reverse:
             j -= reverse
-            reverse //= 2
+            reverse >>= 1
         j += reverse
         if i < j:
             a[i], a[j] = a[j], a[i]
     step = 2
     while step <= n:
-        half = step // 2
-        u = pow(w, mod // step, mod)
+        half = step >> 1
+        u = pow(W, MOD // step, MOD)
         if inverse:
-            u = pow(u, mod - 2, mod)
+            u = pow(u, MOD - 2, MOD)
         for i in range(0, n, step):
             wi = 1
             for j in range(i, i + half):
                 v = a[j + half] * wi
-                a[j + half] = (a[j] - v) % mod
-                a[j] = (a[j] + v) % mod
-                wi = (u * wi) % mod
-        step *= 2
+                a[j + half] = (a[j] - v) % MOD
+                a[j] = (a[j] + v) % MOD
+                wi = (u * wi) % MOD
+        step <<= 1
 
     if inverse:
-        num = mod - (mod - 1) // n
+        num = MOD - (MOD - 1) // n
         for i in range(n):
-            a[i] = (a[i] * num) % mod
+            a[i] = (a[i] * num) % MOD
 
 
-def multiply_ntt(a, b):
-    n = 1
-    while n < len(a):
-        n <<= 1
-    while n < len(b):
-        n <<= 1
-    n <<= 1
-    while len(a) < n:
-        a.append(0)
-    while len(b) < n:
-        b.append(0)
-    ntt(a)
-    ntt(b)
-    c = []
-    for i in range(n):
-        c.append(a[i] * b[i])
+def convolution(a, b):
+    n = 1 << ((max(len(a), len(b)) - 1).bit_length() + 1)
+    a.extend([0] * (n - len(a))); b.extend([0] * (n - len(b)))
+    ntt(a); ntt(b)
+    c = [a[i] * b[i] % MOD for i in range(n)]
     ntt(c, True)
     return c
+
+print(max(convolution(list(map(int, input())), list(map(int, input())))))
