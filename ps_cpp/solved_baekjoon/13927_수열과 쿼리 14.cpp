@@ -1,53 +1,44 @@
 #pragma GCC optimize("O3")
 #pragma GCC optimize("inline")
 #pragma GCC target("avx,avx2,fma")
+#pragma GCC optimize("unroll-loops")
+
+#define private public
+#include <bitset>
+#undef private
 
 #include <bits/stdc++.h>
 #include <immintrin.h>
 
 using namespace std;
 typedef long long int ll;
-constexpr int MAX = 100'010, INTERVAL_SIZE = 1000;
+constexpr int MAX = 100'005, INTERVAL_SIZE = 850;
 
-struct MyBitset { // 비트셋은 비트셋인데 내부 배열에 접근할 수 있는
-    const static int SZ = 1563; // 100000 / 64 + 1
-
-    alignas(32) ll m[SZ];
-    MyBitset() { memset(m, 0, sizeof(m)); }
-    MyBitset(const MyBitset& o) { memcpy(m, o.m, sizeof(m)); }
-    inline void set(int i) { m[i >> 6] |= 1LL << (i & 63); }
-    inline void reset() { memset(m, 0, sizeof(m)); }
-
-    inline void operator|=(const MyBitset& o) {
-        // for (int i = 0; i < SZ; ++i) m[i] |= o.m[i];
-        int i = 0;
-        for (; i < SZ; i += 4) {
-            _mm256_store_si256((__m256i*)&m[i], _mm256_or_si256(_mm256_load_si256((__m256i*)&m[i]), _mm256_load_si256((__m256i*)&o.m[i])));
-        }
-        for (; i < SZ; ++i) m[i] |= o.m[i];
-    }
-
-    inline int find_kth_set_bit(int k) { // 오른쪽에서부터 k번째 켜진 비트의 위치
-        for (int i = 0; i < SZ; ++i) {
-            if (__builtin_popcountll(m[i]) >= k) {
-                for (int j = 0; j < 64; ++j) {
-                    if (m[i] & (1LL << j)) {
-                        if (--k == 0) return i * 64 + j;
-                    }
+template <size_t _Nw> inline int _find_kth_set_bit(const _Base_bitset<_Nw>& b, int k) {
+    int cnt;
+    for (int i = 0; i < _Nw; ++i) {
+        if ((cnt = __builtin_popcountll(b._M_w[i])) >= k) {
+            for (int j = 0; j < 64; ++j) {
+                if (b._M_w[i] & (1LL << j)) {
+                    if (--k == 0) return i * 64 + j;
                 }
             }
-            k -= __builtin_popcountll(m[i]);
         }
-        return -1;
+        k -= cnt;
     }
-};
+    return -1;
+}
+
+template <size_t _Nb> inline int find_kth_set_bit(const bitset<_Nb>& b, int k) {
+    return _find_kth_set_bit(b, k);
+}
 
 struct SQDC {
     int naive[MAX];
     // bitset<MAX> st[SQ], res;
     // st: 버킷, res: 쿼리 결과 구할 때 쓸 임시 변수
     // tree: 버킷에 대한 세그먼트 트리
-    MyBitset st[MAX / INTERVAL_SIZE], res, tree[1 << (33 - __builtin_clz(MAX / INTERVAL_SIZE + 1))], empty;
+    bitset<MAX> st[MAX / INTERVAL_SIZE], res, tree[1 << (33 - __builtin_clz(MAX / INTERVAL_SIZE + 1))], empty;
     int N;
 
     void init(int N) {
@@ -69,17 +60,17 @@ struct SQDC {
         tree[i] = tree[i << 1]; tree[i] |= tree[i << 1 | 1];
     }
 
-    MyBitset query_tree(int l, int r, int ql, int qr, int i = 1) {
+    bitset<MAX> query_tree(int l, int r, int ql, int qr, int i = 1) {
         if (r < ql || qr < l) return empty;
         if (ql <= l && r <= qr) return tree[i];
         int m = (l + r) >> 1;
-        MyBitset res = query_tree(l, m, ql, qr, i << 1);
+        bitset<MAX> res = query_tree(l, m, ql, qr, i << 1);
         res |= query_tree(m + 1, r, ql, qr, i << 1 | 1);
         return res;
     }
 
     // [l, r)
-    inline void init_bucket(MyBitset& bkt, int l, int r) {
+    void init_bucket(bitset<MAX>& bkt, int l, int r) {
         bkt.reset();
         for (int i = l; i < r; ++i) {
             bkt.set(naive[i]);
@@ -102,7 +93,7 @@ struct SQDC {
                 ++i;
             }
         }
-        return res.find_kth_set_bit(k);
+        return find_kth_set_bit(res, k);
     }
 } sqdc;
 
