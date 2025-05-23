@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# solved_baekjoon 폴더가 없으면 생성
+mkdir -p solved_baekjoon
+
+# (문제번호)_(문제이름).cpp 형식의 파일을 solved_baekjoon 폴더로 이동
+mv [0-9]*_*.cpp solved_baekjoon/ 2>/dev/null
+
+# *.out 파일 모두 삭제
+rm -f *.out
