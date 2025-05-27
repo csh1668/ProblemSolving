@@ -8,3 +8,9 @@ mv [0-9]*_*.cpp solved_baekjoon/ 2>/dev/null
 
 # *.out 파일 모두 삭제
 rm -f *.out
+
+# git pull 하고 commit, push
+git pull origin main
+git add .
+git commit -m "Added solved problems"
+git push origin main
