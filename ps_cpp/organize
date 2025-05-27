@@ -3,8 +3,23 @@
 # solved_baekjoon 폴더가 없으면 생성
 mkdir -p solved_baekjoon
 
-# (문제번호)_(문제이름).cpp 형식의 파일을 solved_baekjoon 폴더로 이동
-mv [0-9]*_*.cpp solved_baekjoon/ 2>/dev/null
+# 이동할 파일 목록을 저장
+files_to_move=$(ls [0-9]*_*.cpp 2>/dev/null)
+
+# 이동된 파일이 있는 경우 문제 번호 추출
+problem_numbers=""
+if [ -n "$files_to_move" ]; then
+    # 파일들을 solved_baekjoon 폴더로 이동
+    mv [0-9]*_*.cpp solved_baekjoon/ 2>/dev/null
+    
+    # 이동된 파일에서 문제 번호만 추출
+    for file in $files_to_move; do
+        number=$(echo $file | grep -o "^[0-9]*")
+        problem_numbers="$problem_numbers$number, "
+    done
+    # 마지막 콤마와 공백 제거
+    problem_numbers=$(echo $problem_numbers | sed 's/, $//')
+fi
 
 # *.out 파일 모두 삭제
 rm -f *.out
@@ -12,5 +27,12 @@ rm -f *.out
 # git pull 하고 commit, push
 git pull origin main
 git add .
-git commit -m "Added solved problems"
+
+# 이동된 파일이 있으면 문제 번호를 포함한 커밋 메시지 사용
+if [ -n "$problem_numbers" ]; then
+    git commit -m "Added solved problems: $problem_numbers"
+else
+    git commit
+fi
+
 git push origin main
