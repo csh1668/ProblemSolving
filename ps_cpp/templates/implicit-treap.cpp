@@ -26,7 +26,7 @@ struct Node {
 };
 typedef Node* pNode;
 
-pair<pNode, pNode> split(pNode t, int k) {
+pair<pNode, pNode> split(pNode t, int k) { // 1-based
     if (!t) return {0, 0};
     t->push();
     int lcnt = t->l ? t->l->cnt : 0;
